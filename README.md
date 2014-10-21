@@ -36,25 +36,25 @@ The applet uses FFMpeg (https://www.ffmpeg.org/) for recording your screen.
 
 ## Environment setup (Eclipse)
 
-1. Checkout the code:
+* Checkout the code:
 ```
 git clone http://github.com/onedanshow/Screen-Courter.git
 ```
-2. Compile and setup the project using maven
+* Compile and setup the project using maven
 ```
 mvn compile eclipse:eclipse
 ```
-3. Open Eclipse and import the project
-4. Start editing the code
+* Open Eclipse and import the project
+* Start editing the code
 
 ## Environment setup (IntelliJ IDEA)
 
-1. Checkout the code:
+* Checkout the code:
 ```
 git clone http://github.com/onedanshow/Screen-Courter.git
 ```
-2. Open IntelliJ IDEA and import the project by selecting the pom.xml in the root folder
-3. Start editing the code
+* Open IntelliJ IDEA and import the project by selecting the pom.xml in the root folder
+* Start editing the code
 
 ## Licence
 
