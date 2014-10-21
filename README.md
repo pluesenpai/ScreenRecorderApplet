@@ -1,3 +1,4 @@
+```
     ___|                             _ \                          |
   \___ \   __|  __| _ \  _ \ __ \   |   |  _ \  __|  _ \   __| _` |  _ \  __|
         | (    |    __/  __/ |   |  __ <   __/ (    (   | |   (   |  __/ |
@@ -8,16 +9,18 @@
                           ___ \  |   | |   | |  __/ |
                         _/    _\ .__/  .__/ _|\___|\__|
                                 _|    _|
+```
 
 ScreenRecorderApplet (https://github.com/paolinux86/ScreenRecorderApplet)
-	by Paolo Cortis
+  by Paolo Cortis
 
-	A free screen recording applet based on Screen-Courter by Daniel Dixon
-	https://github.com/onedanshow/Screen-Courter
+A free screen recording applet based on Screen-Courter by Daniel Dixon
+https://github.com/onedanshow/Screen-Courter
 
 ## Description
 
 ScreenRecorderApplet is a cross-platform screen recording Java applet.
+
 The applet uses FFMpeg (https://www.ffmpeg.org/) for recording your screen.
 
 ## Requirements
@@ -37,14 +40,11 @@ The applet uses FFMpeg (https://www.ffmpeg.org/) for recording your screen.
 ```
 git clone http://github.com/onedanshow/Screen-Courter.git
 ```
-
 2. Compile and setup the project using maven
 ```
 mvn compile eclipse:eclipse
 ```
-
 3. Open Eclipse and import the project
-
 4. Start editing the code
 
 ## Environment setup (IntelliJ IDEA)
@@ -53,9 +53,7 @@ mvn compile eclipse:eclipse
 ```
 git clone http://github.com/onedanshow/Screen-Courter.git
 ```
-
 2. Open IntelliJ IDEA and import the project by selecting the pom.xml in the root folder
-
 3. Start editing the code
 
 ## Licence
