@@ -39,7 +39,7 @@ public class WindowsRecorderThread extends RecorderThread
 		String ffmpegBinaryPath = appletParameters.getFFmpegBinaryPath().getAbsolutePath();
 		FfmpegDevices directshowDevices = enumerateDirectshowDevices(ffmpegBinaryPath);
 		String inputs = combineDevicesForFfmpegInput(directshowDevices);
-		String codecs = "-vcodec libx264 -pix_fmt yuv420p -preset ultrafast -bufsize 600k -threads 0 -crf 0 -tune zerolatency -vsync vfr -acodec libmp3lame";
+		String codecs = "-vcodec libx264 -pix_fmt yuv420p -preset ultrafast -bufsize 600k -threads 0 -tune zerolatency -vsync vfr -acodec libmp3lame";
 		String command = MessageFormat.format("{0} -y -loglevel info -rtbufsize 2000M {1} {2} -f mp4 {3}",
 				ffmpegBinaryPath, inputs, codecs, outputFileFullPath);
 

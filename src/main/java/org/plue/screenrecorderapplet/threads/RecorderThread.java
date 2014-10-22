@@ -126,6 +126,10 @@ public abstract class RecorderThread extends Thread
 						logger.info("Executing command: " + command);
 						ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
 
+						if(recordingProcess != null) {
+							recordingProcess.destroy();
+						}
+
 						recordingProcess = pb.start();
 
 						errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "ffmpeg E");
@@ -173,10 +177,6 @@ public abstract class RecorderThread extends Thread
 		pw.print("q");
 		pw.flush();
 
-		if(recordingProcess != null) {
-			recordingProcess.destroy();
-		}
-
 		logger.debug("# completed stopRecording");
 	}
 
@@ -188,6 +188,10 @@ public abstract class RecorderThread extends Thread
 		logger.info("Finalizing ScreenRecorder...");
 		super.finalize();
 		stopRecording();
+
+		if(recordingProcess != null) {
+			recordingProcess.destroy();
+		}
 	}
 
 	private class TimerActionListener implements ActionListener
