@@ -3,6 +3,8 @@ package org.plue.screenrecorderapplet.models;
 import org.apache.commons.io.FilenameUtils;
 import org.plue.screenrecorderapplet.exceptions.UnknownOperatingSystemException;
 import org.plue.screenrecorderapplet.utils.OperatingSystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +16,8 @@ import java.util.Properties;
  */
 public abstract class AppletParameters
 {
+	private static final Logger logger = LoggerFactory.getLogger(AppletParameters.class);
+
 	private static final String PROPERTIES_FILENAME = "config.properties";
 
 	protected final Properties properties;
@@ -30,41 +34,62 @@ public abstract class AppletParameters
 
 	public static AppletParameters getInstance() throws IOException, UnknownOperatingSystemException
 	{
+		logger.debug("# called getInstance");
+
 		if(instance == null) {
+			logger.debug("Applet parameters instance was null. Creating new one");
 			instance = getAppletParametersInstance();
 		}
+
+		logger.debug("# completed getInstance");
 
 		return instance;
 	}
 
-	protected AppletParameters() throws IOException
-	{
-		properties = new Properties();
-		properties.load(AppletParameters.class.getClassLoader().getResourceAsStream(PROPERTIES_FILENAME));
-
-		loadParametersInternal();
-	}
-
 	private static AppletParameters getAppletParametersInstance() throws UnknownOperatingSystemException, IOException
 	{
+		logger.debug("# called getAppletParametersInstance");
+
 		AppletParameters appletParameters;
 		if(OperatingSystemUtils.isWindows()) {
+			logger.info("Using WindowsAppletParameters");
 			appletParameters = new WindowsAppletParameters();
 		} else if(OperatingSystemUtils.isLinux()) {
+			logger.info("Using LinuxAppletParameters");
 			appletParameters = new LinuxAppletParameters();
 		} else {
+			logger.info("Unknown or unsupported operating system: '" + OperatingSystemUtils.getOSName() + "'");
 			throw new UnknownOperatingSystemException(MessageFormat.format("Unknown OS {0}", OperatingSystemUtils.getOSName()));
 		}
+
+		logger.debug("# completed getAppletParametersInstance");
 
 		return appletParameters;
 	}
 
+	protected AppletParameters() throws IOException
+	{
+		logger.debug("# called constructor");
+
+		logger.info("Loading properties file '" + PROPERTIES_FILENAME + "'");
+		properties = new Properties();
+		properties.load(AppletParameters.class.getClassLoader().getResourceAsStream(PROPERTIES_FILENAME));
+
+		loadParametersInternal();
+
+		logger.debug("# completed constructor");
+	}
+
 	private void loadParametersInternal()
 	{
+		logger.debug("# called loadParametersInternal");
+
 		readBaseFolder();
 		readLogPath();
 		readBinFolder();
 		readTmpFolder();
+
+		logger.debug("# completed loadParametersInternal");
 	}
 
 	public File getBaseFolder()
@@ -89,7 +114,11 @@ public abstract class AppletParameters
 
 	protected void readLogPath()
 	{
+		logger.debug("# called readLogPath");
+
 		this.logPath = new File(FilenameUtils.concat(getBaseFolder().getAbsolutePath(), "production.log"));
+
+		logger.debug("# completed readLogPath");
 	}
 
 	protected abstract void readBaseFolder();

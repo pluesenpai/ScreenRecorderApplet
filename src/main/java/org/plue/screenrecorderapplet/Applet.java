@@ -14,7 +14,6 @@ import org.plue.screenrecorderapplet.services.ScreenRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -28,37 +27,67 @@ import java.util.Date;
 /**
  * @author paolo86@altervista.org
  */
-public class Applet extends JApplet implements BinariesDownloader.DownloadCompleteNotifier, JavascriptAPIs
+public class Applet extends java.applet.Applet implements BinariesDownloader.DownloadCompleteNotifier, JavascriptAPIs
 {
 	private static final Logger logger = LoggerFactory.getLogger(Applet.class);
 
-	public static JSObject JS_BRIDGE;
+	public JSObject jsBridge;
 
-	private AppletParameters appletParameters;
+	private AppletParameters appletParameters = null;
 
 	private ScreenRecorder screenRecorder;
+
+	public Applet()
+	{
+		try {
+			appletParameters = AppletParameters.getInstance();
+		} catch(Exception e) {
+			System.out.println("Cannot load applet parameters");
+		}
+
+		setupLogFile();
+	}
+
+	private void setupLogFile()
+	{
+		System.setProperty(PropertyKeys.LOG_FILE_PATH, appletParameters.getLogPath().getAbsolutePath());
+		PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("log4j.properties"));
+	}
 
 	@Override
 	public void init()
 	{
-		logger.debug("Initializing applet");
+		logger.debug("# called init");
+
+		setupJsBridge();
+		doInit();
+
+		logger.debug("# completed init");
+	}
+
+	private void setupJsBridge()
+	{
+		logger.debug("# called setupJsBridge");
 
 		try {
-			JS_BRIDGE = JSObject.getWindow(this);
+			jsBridge = JSObject.getWindow(this);
+			logger.info("retrieved js bridge");
 		} catch(JSException e) {
-			logger.error("Could not create JSObject.");
-			return;
+			logger.error("Could not retrieve js bridge.");
 		}
 
-		doInit();
+		logger.debug("# completed setupJsBridge");
 	}
 
 	private void doInit()
 	{
-		try {
-			appletParameters = AppletParameters.getInstance();
+		logger.debug("# called doInit");
 
-			setupLogFile();
+		try {
+			if(appletParameters == null) {
+				appletParameters = AppletParameters.getInstance();
+			}
+
 			createMissingDirectories();
 			logAppletInfo();
 
@@ -69,12 +98,8 @@ public class Applet extends JApplet implements BinariesDownloader.DownloadComple
 			logger.error(e.getMessage(), e);
 			notifyView(NotificationType.FATAL, "Error initializing applet");
 		}
-	}
 
-	private void setupLogFile()
-	{
-		System.setProperty(PropertyKeys.LOG_FILE_PATH, appletParameters.getLogPath().getAbsolutePath());
-		PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("log4j.properties"));
+		logger.debug("# completed doInit");
 	}
 
 	private void createMissingDirectories()
@@ -140,17 +165,17 @@ public class Applet extends JApplet implements BinariesDownloader.DownloadComple
 		jsCall(StandardMethodNames.SRA_STATUS_UPDATE, state, message);
 	}
 
-	private static void jsCall(String method, Object... parameters)
+	private void jsCall(String method, Object... parameters)
 	{
 		logger.debug(MessageFormat
 				.format("jsCall - method: {0}, parameters: {1}", method, StringUtils.join(parameters, ", ")));
 
-		if(JS_BRIDGE == null) {
+		if(jsBridge == null) {
 			logger.error("No JS Bridge exists.");
 			return;
 		}
 
-		JS_BRIDGE.call(method, parameters);
+		jsBridge.call(method, parameters);
 	}
 
 	@Override
