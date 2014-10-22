@@ -21,9 +21,9 @@ public class WindowsRecorderThread extends RecorderThread
 {
 	private static final Logger logger = LoggerFactory.getLogger(WindowsRecorderThread.class);
 
-	public static final String U_SCREEN_CAPTURE = "UScreenCapture";
+	private static final String U_SCREEN_CAPTURE = "UScreenCapture";
 
-	public static final String SCREEN_CAPTURE_RECORDER = "screen-capture-recorder";
+	private static final String SCREEN_CAPTURE_RECORDER = "screen-capture-recorder";
 
 	protected WindowsRecorderThread(String outputFileFullPath,
 			ScreenRecorder.RecordingInfoNotifier recordingInfoNotifier)

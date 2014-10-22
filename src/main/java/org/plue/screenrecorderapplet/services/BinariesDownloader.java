@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,7 +31,7 @@ import java.util.List;
  */
 public class BinariesDownloader
 {
-	private Logger logger = LoggerFactory.getLogger(BinariesDownloader.class);
+	private static final Logger logger = LoggerFactory.getLogger(BinariesDownloader.class);
 
 	private AppletParameters appletParameters;
 
@@ -167,8 +166,7 @@ public class BinariesDownloader
 		logger.debug("# completed doDownload");
 	}
 
-	private void extractZip(String zipFilePath, String where)
-			throws ZipException, BinariesDownloadException
+	private void extractZip(String zipFilePath, String where) throws ZipException
 	{
 		logger.debug("# called extractZip");
 

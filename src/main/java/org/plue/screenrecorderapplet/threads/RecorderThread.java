@@ -37,7 +37,7 @@ public abstract class RecorderThread extends Thread
 
 	protected String outputFileFullPath;
 
-	protected ScreenRecorder.RecordingInfoNotifier recordingInfoNotifier;
+	private ScreenRecorder.RecordingInfoNotifier recordingInfoNotifier;
 
 	private Process recordingProcess;
 
@@ -49,7 +49,7 @@ public abstract class RecorderThread extends Thread
 
 	private Long timerCount = 0L;
 
-	private long[] errorHits = new long[90];
+	private static final long[] errorHits = new long[90];
 
 	protected RecorderThread(String outputFileFullPath, ScreenRecorder.RecordingInfoNotifier recordingInfoNotifier)
 	{

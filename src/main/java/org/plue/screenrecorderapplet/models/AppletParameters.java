@@ -28,7 +28,7 @@ public abstract class AppletParameters
 
 	protected File tmpFolder;
 
-	protected File logPath;
+	private File logPath;
 
 	private static AppletParameters instance;
 

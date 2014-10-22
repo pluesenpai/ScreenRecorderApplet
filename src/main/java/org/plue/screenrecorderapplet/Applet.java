@@ -31,7 +31,7 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 {
 	private static final Logger logger = LoggerFactory.getLogger(Applet.class);
 
-	public JSObject jsBridge;
+	private JSObject jsBridge;
 
 	private AppletParameters appletParameters = null;
 
