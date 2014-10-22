@@ -31,6 +31,8 @@ public abstract class RecorderThread extends Thread
 
 	private static final int ERRORS_WINDOW_IN_SECONDS = 15;
 
+	private static final long[] errorHits = new long[90];
+
 	protected static final String FPS = "10";
 
 	protected AppletParameters appletParameters;
@@ -49,39 +51,53 @@ public abstract class RecorderThread extends Thread
 
 	private Long timerCount = 0L;
 
-	private static final long[] errorHits = new long[90];
-
 	protected RecorderThread(String outputFileFullPath, ScreenRecorder.RecordingInfoNotifier recordingInfoNotifier)
 	{
+		logger.debug("# called constructor");
+
 		try {
 			appletParameters = AppletParameters.getInstance();
 			this.outputFileFullPath = outputFileFullPath;
 			this.recordingInfoNotifier = recordingInfoNotifier;
 		} catch(Exception e) {
+			logger.error("Error while initializing RecorderThread", e);
 			if(recordingInfoNotifier != null) {
 				recordingInfoNotifier.onRecordUpdate(NotificationType.FATAL, "Cannot initialize recorder");
+			} else {
+				logger.info("Recording Notifier is not set. Cannot notify view.");
 			}
 		}
+
+		logger.debug("# completed constructor");
 	}
 
 	public static RecorderThread newInstance(String outputFileFullPath,
 			ScreenRecorder.RecordingInfoNotifier recordingInfoNotifier)
 			throws IOException, UnknownOperatingSystemException
 	{
+		logger.debug("# called newInstance");
+
 		AppletParameters appletParameters = AppletParameters.getInstance();
 		AppletParameters.OperatingSystem operatingSystem = appletParameters.getOperatingSystem();
 		if(operatingSystem == AppletParameters.OperatingSystem.WINDOWS) {
+			logger.info("Using WindowsRecorderThread");
+			logger.debug("# completed newInstance");
 			return new WindowsRecorderThread(outputFileFullPath, recordingInfoNotifier);
 		} else if(operatingSystem == AppletParameters.OperatingSystem.LINUX) {
+			logger.info("Using LinuxRecorderThread");
+			logger.debug("# completed newInstance");
 			return new LinuxRecorderThread(outputFileFullPath, recordingInfoNotifier);
 		}
 
+		logger.error("Unknown or unsupported operating system: '" + operatingSystem.toString() + "'");
 		throw new UnknownOperatingSystemException();
 	}
 
 	@Override
 	public void run()
 	{
+		logger.debug("# called run");
+
 		try {
 			// can have problem with file permissions when methods are invoked via Javascript even if applet is signed,
 			// thus some code needs to wrapped in a privileged block
@@ -107,7 +123,7 @@ public abstract class RecorderThread extends Thread
 						String command = getFFmpegCommand();
 						List<String> ffmpegArgs = Arrays.asList(StringUtils.split(command, " "));
 
-						logger.info("Executing this command: " + prettyCommand(ffmpegArgs));
+						logger.info("Executing command: " + command);
 						ProcessBuilder pb = new ProcessBuilder(ffmpegArgs);
 
 						recordingProcess = pb.start();
@@ -123,39 +139,45 @@ public abstract class RecorderThread extends Thread
 
 						recordingProcess.waitFor();
 
+						logger.info("Registration completed");
+
 						if(recordingInfoNotifier != null) {
 							recordingInfoNotifier.onRecordUpdate(NotificationType.COMPLETED, "");
 						}
 					} catch(Exception e) {
+						logger.error("Registration failed", e);
 						recordingInfoNotifier.onRecordUpdate(NotificationType.FATAL, "Registration failed");
 					}
 				}
 			});
 		} catch(Exception e) {
+			logger.error("Registration failed", e);
 			recordingInfoNotifier.onRecordUpdate(NotificationType.FATAL, "Registration failed");
+			return;
 		}
+
+		logger.debug("# completed run");
 	}
 
 	public void stopRecording()
 	{
+		logger.debug("# called stopRecording");
+
 		if(timer != null && timer.isRunning()) {
 			timer.stop();
 			timerCount = 0L;
 		}
 
+		logger.info("Stopping ffmpeg.");
 		PrintWriter pw = new PrintWriter(recordingProcess.getOutputStream());
 		pw.print("q");
 		pw.flush();
-		logger.info("Screen recording should be stopped.");
 
 		if(recordingProcess != null) {
 			recordingProcess.destroy();
 		}
-	}
 
-	private String prettyCommand(List<String> args)
-	{
-		return StringUtils.join(args, " ");
+		logger.debug("# completed stopRecording");
 	}
 
 	protected abstract String getFFmpegCommand() throws ScreenRecorderException;
@@ -210,7 +232,7 @@ public abstract class RecorderThread extends Thread
 			long now = GregorianCalendar.getInstance().getTimeInMillis();
 			errorHits[errorHits.length - 1] = now;
 			if(errorHits[0] >= (now - (ERRORS_WINDOW_IN_SECONDS * 1000))) {
-				logger.debug(MessageFormat
+				logger.warn(MessageFormat
 						.format("Too many errors in last {0} seconds (counted {1} errors). Stopping video",
 								ERRORS_WINDOW_IN_SECONDS, errorHits.length));
 				stopRecording();

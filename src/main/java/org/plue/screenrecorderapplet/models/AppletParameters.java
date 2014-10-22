@@ -58,7 +58,7 @@ public abstract class AppletParameters
 			logger.info("Using LinuxAppletParameters");
 			appletParameters = new LinuxAppletParameters();
 		} else {
-			logger.info("Unknown or unsupported operating system: '" + OperatingSystemUtils.getOSName() + "'");
+			logger.error("Unknown or unsupported operating system: '" + OperatingSystemUtils.getOSName() + "'");
 			throw new UnknownOperatingSystemException(MessageFormat.format("Unknown OS {0}", OperatingSystemUtils.getOSName()));
 		}
 
