@@ -16,24 +16,26 @@ import java.util.Map;
  * Handles output from processes.
  *
  * @author Daniel Dixon (http://www.danieldixon.com)
+ * @author paolo86@altervista.org
  */
 public class StreamGobbler extends Thread
 {
 	private static Logger logger = Logger.getLogger(StreamGobbler.class);
 
-	protected InputStream is;
+	private InputStream is;
 
-	protected boolean discardOutput;
+	private boolean discardOutput;
 
-	protected String prefix;
+	private String prefix;
 
-	protected Map<String, EventListenerList> listeners = new HashMap<String, EventListenerList>();
+	private Map<String, EventListenerList> listeners;
 
 	public StreamGobbler(InputStream is, boolean discard, String prefix)
 	{
 		this.is = is;
 		this.discardOutput = discard;
 		this.prefix = prefix;
+		this.listeners = new HashMap<String, EventListenerList>();
 	}
 
 	@Override
@@ -42,56 +44,40 @@ public class StreamGobbler extends Thread
 		try {
 			InputStreamReader isr = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(isr);
-			String line = null;
+			String line;
 			while((line = br.readLine()) != null) {
-				if(!discardOutput)
+				if(!discardOutput) {
 					logger.info(prefix + ": " + line);
-				for(String word : listeners.keySet())
-					if(line.contains(word))
+				}
+
+				for(String word : listeners.keySet()) {
+					if(line.contains(word)) {
 						fireActionPerformed(word, line);
+					}
+				}
 			}
-		} catch(IOException ioe) {
-			ioe.printStackTrace();
+		} catch(IOException e) {
+			logger.error(e.getMessage(), e);
 		}
 	}
 
-	/**
-	 * Adds an <code>ActionListener</code> to the button.
-	 *
-	 * @param l the <code>ActionListener</code> to be added
-	 */
 	public void addActionListener(String word, ActionListener l)
 	{
 		if(!listeners.containsKey(word)) {
 			listeners.put(word, new EventListenerList());
 		}
+
 		listeners.get(word).add(ActionListener.class, l);
 	}
 
-	/**
-	 * Removes an <code>ActionListener</code>.
-	 * If the listener is the currently set <code>Action</code>
-	 * for the button, then the <code>Action</code>
-	 * is set to <code>null</code>.
-	 *
-	 * @param l the listener to be removed
-	 */
 	public void removeActionListener(ActionListener l)
 	{
-		for(EventListenerList forWord : listeners.values())
+		for(EventListenerList forWord : listeners.values()) {
 			forWord.remove(ActionListener.class, l);
+		}
 	}
 
-	/**
-	 * Notifies all listeners that have registered interest for
-	 * notification on this event type.  The event instance
-	 * is lazily created using the <code>event</code>
-	 * parameter.
-	 *
-	 * @param event the <code>ActionEvent</code> object
-	 * @see javax.swing.event.EventListenerList
-	 */
-	protected void fireActionPerformed(String word, String line)
+	private void fireActionPerformed(String word, String line)
 	{
 		// Guaranteed to return a non-null array
 		Object[] forWord = listeners.get(word).getListenerList();
@@ -104,6 +90,7 @@ public class StreamGobbler extends Thread
 				if(e == null) {
 					e = new ActionEvent(StreamGobbler.this, ActionEvent.ACTION_PERFORMED, line);
 				}
+
 				((ActionListener) forWord[i + 1]).actionPerformed(e);
 			}
 		}
