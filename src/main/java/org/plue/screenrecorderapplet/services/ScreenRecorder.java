@@ -25,21 +25,29 @@ public class ScreenRecorder
 	public void recordScreen(RecordingInfoNotifier recordingInfoNotifier)
 			throws IOException, UnknownOperatingSystemException
 	{
-		logger.debug("Starting record");
+		logger.debug("# called recordScreen");
+
 		String outputFileFullPath = FilenameUtils.concat(saveFolder, filename);
+		logger.info("Starting record. Output file path: " + outputFileFullPath);
 		recorderThread = RecorderThread.newInstance(outputFileFullPath, recordingInfoNotifier);
 		recorderThread.start();
+
+		logger.debug("# completed recordScreen");
 	}
 
 	public void stopRecord()
 	{
-		logger.debug("Stopping record");
+		logger.debug("# called stopRecord");
+
+		logger.info("Stopping record");
 		if(recorderThread == null) {
-			logger.debug("Thread is not running. Exiting");
+			logger.info("Not recording. Exiting");
 			return;
 		}
 
 		recorderThread.stopRecording();
+
+		logger.debug("# completed stopRecord");
 	}
 
 	public void setSaveFolder(String saveFolder)

@@ -3,6 +3,7 @@ package org.plue.screenrecorderapplet.threads;
 import it.sinossi.commons.systemexecutor.SystemCommandExecutor;
 import it.sinossi.commons.systemexecutor.SystemProcessResult;
 import org.apache.commons.lang.StringUtils;
+import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
 import org.plue.screenrecorderapplet.services.ScreenRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,27 +25,37 @@ public class WindowsRecorderThread extends RecorderThread
 
 	public static final String SCREEN_CAPTURE_RECORDER = "screen-capture-recorder";
 
-	protected WindowsRecorderThread(String outputFileFullPath, ScreenRecorder.RecordingInfoNotifier recordingInfoNotifier)
+	protected WindowsRecorderThread(String outputFileFullPath,
+			ScreenRecorder.RecordingInfoNotifier recordingInfoNotifier)
 	{
 		super(outputFileFullPath, recordingInfoNotifier);
 	}
 
 	@Override
-	protected String getFFmpegCommand()
+	protected String getFFmpegCommand() throws ScreenRecorderException
 	{
+		logger.debug("# called getFFmpegCommand");
+
 		String ffmpegBinaryPath = appletParameters.getFFmpegBinaryPath().getAbsolutePath();
 		FfmpegDevices directshowDevices = enumerateDirectshowDevices(ffmpegBinaryPath);
 		String inputs = combineDevicesForFfmpegInput(directshowDevices);
 		String codecs = "-vcodec libx264 -pix_fmt yuv420p -preset ultrafast -bufsize 600k -threads 0 -crf 0 -tune zerolatency -vsync vfr -acodec libmp3lame";
-		String command = MessageFormat .format("{0} -y -loglevel info -rtbufsize 2000M {1} {2} -f mp4 {3}",
+		String command = MessageFormat.format("{0} -y -loglevel info -rtbufsize 2000M {1} {2} -f mp4 {3}",
 				ffmpegBinaryPath, inputs, codecs, outputFileFullPath);
+
+		logger.debug("FFMpeg command: " + command);
+
+		logger.debug("# completed getFFmpegCommand");
 
 		return command;
 	}
 
-	private FfmpegDevices enumerateDirectshowDevices(String ffmpegPath)
+	private FfmpegDevices enumerateDirectshowDevices(String ffmpegPath) throws ScreenRecorderException
 	{
+		logger.debug("# called enumerateDirectshowDevices");
+
 		String ffmpegListCommand = ffmpegPath + " -list_devices true -f dshow -i dummy 2>&1";
+		logger.info("Executing " + ffmpegListCommand);
 
 		SystemProcessResult result = SystemCommandExecutor.execute(parseParameters(ffmpegListCommand));
 		logger.debug("enumerateDirectshowDevices - stderr");
@@ -53,35 +64,43 @@ public class WindowsRecorderThread extends RecorderThread
 		logger.debug(result.getOutput());
 
 		if(result.getExitCode() != 1) {
-			logger.error("Error while listing devices. Exit code: " + result.getExitCode());
-			// FIXME: change exception
-			throw new RuntimeException();
+			String message = "Error while listing devices. Exit code: " + result.getExitCode();
+			logger.error(message);
+			throw new RetrieveFFMpegCommandException(message);
 		}
 
 		String output = result.getError();
 		String[] ffmpegSplittedOutput = output.split("DirectShow");
 		if(ffmpegSplittedOutput.length < 3) {
-			logger.error("Error splitting output. Number of parts: " + ffmpegSplittedOutput.length);
+			String message = "Error splitting output. Number of parts: " + ffmpegSplittedOutput.length
+					+ ". Expected at least 3 parts.";
+			logger.error(message);
 			for(int i = 0; i < ffmpegSplittedOutput.length; i++) {
 				logger.error("===================================");
 				logger.error("Part " + i + ": ");
 				logger.error(ffmpegSplittedOutput[i]);
 			}
-			throw new RuntimeException();
+			throw new RetrieveFFMpegCommandException(message);
 		}
 
 		String video = ffmpegSplittedOutput[1];
 		String audio = ffmpegSplittedOutput[2];
 
 		FfmpegDevices ffmpegDevices = new FfmpegDevices();
+		logger.info("Parsing audio devices");
 		ffmpegDevices.audioDevices = parseWithIndexes(audio);
+		logger.info("Parsing video devices");
 		ffmpegDevices.videoDevices = parseWithIndexes(video);
+
+		logger.debug("# completed enumerateDirectshowDevices");
 
 		return ffmpegDevices;
 	}
 
 	private List<FfmpegDevice> parseWithIndexes(String s)
 	{
+		logger.debug("# called parseWithIndexes");
+
 		List<FfmpegDevice> ffmpegDevices = new ArrayList<FfmpegDevice>();
 
 		Integer index = 0;
@@ -107,11 +126,17 @@ public class WindowsRecorderThread extends RecorderThread
 			}
 		}
 
+		logger.info("Found " + ffmpegDevices.size() + " devices.");
+
+		logger.debug("# completed parseWithIndexes");
+
 		return ffmpegDevices;
 	}
 
 	private String combineDevicesForFfmpegInput(FfmpegDevices ffmpegDevices)
 	{
+		logger.debug("# called combineDevicesForFfmpegInput");
+
 		List<FfmpegDevice> audioDevices = ffmpegDevices.getAudioDevices();
 
 		String audioDeviceString = "";
@@ -139,15 +164,22 @@ public class WindowsRecorderThread extends RecorderThread
 		String videoSection = "-f dshow -framerate {0} -video_device_number {1} -i video=\"{2}\" ";
 		String videoDeviceString;
 		if(uScreenCaptureKey != -1) {
+			logger.info("Using " + U_SCREEN_CAPTURE);
 			videoDeviceString = MessageFormat
 					.format(videoSection, FPS, videoDevices.get(uScreenCaptureKey).getIndex(), U_SCREEN_CAPTURE);
 		} else if(screenCaptureRecorderKey != -1) {
+			logger.info("Using " + SCREEN_CAPTURE_RECORDER);
 			videoDeviceString = MessageFormat
 					.format(videoSection, FPS, videoDevices.get(screenCaptureRecorderKey).getIndex(),
 							SCREEN_CAPTURE_RECORDER);
 		} else {
 			videoDeviceString = "";
 		}
+
+		logger.info("FFMpeg audio inputs: " + audioDeviceString);
+		logger.info("FFMpeg video inputs: " + videoDeviceString);
+
+		logger.debug("# completed combineDevicesForFfmpegInput");
 
 		return audioDeviceString + videoDeviceString;
 	}
@@ -214,6 +246,28 @@ public class WindowsRecorderThread extends RecorderThread
 		public void setVideoDevices(List<FfmpegDevice> videoDevices)
 		{
 			this.videoDevices = videoDevices;
+		}
+	}
+
+	private class RetrieveFFMpegCommandException extends ScreenRecorderException
+	{
+		private RetrieveFFMpegCommandException()
+		{
+		}
+
+		private RetrieveFFMpegCommandException(String message)
+		{
+			super(message);
+		}
+
+		private RetrieveFFMpegCommandException(String message, Throwable cause)
+		{
+			super(message, cause);
+		}
+
+		private RetrieveFFMpegCommandException(Throwable cause)
+		{
+			super(cause);
 		}
 	}
 }

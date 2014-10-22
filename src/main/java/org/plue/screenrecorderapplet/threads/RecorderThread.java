@@ -2,6 +2,7 @@ package org.plue.screenrecorderapplet.threads;
 
 import org.apache.commons.lang.StringUtils;
 import org.plue.screenrecorderapplet.enums.NotificationType;
+import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
 import org.plue.screenrecorderapplet.exceptions.UnknownOperatingSystemException;
 import org.plue.screenrecorderapplet.models.AppletParameters;
 import org.plue.screenrecorderapplet.models.StreamGobbler;
@@ -157,7 +158,7 @@ public abstract class RecorderThread extends Thread
 		return StringUtils.join(args, " ");
 	}
 
-	protected abstract String getFFmpegCommand();
+	protected abstract String getFFmpegCommand() throws ScreenRecorderException;
 
 	@Override
 	protected void finalize() throws Throwable
