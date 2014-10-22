@@ -50,8 +50,12 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 
 	private void setupLogFile()
 	{
-		System.setProperty(PropertyKeys.LOG_FILE_PATH, appletParameters.getLogPath().getAbsolutePath());
+		String logPath = appletParameters.getLogPath().getAbsolutePath();
+		System.setProperty(PropertyKeys.LOG_FILE_PATH, logPath);
 		PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("log4j.properties"));
+
+		logger.info("Logger setup completed");
+		logger.info("Logging to " + logPath);
 	}
 
 	@Override
@@ -104,19 +108,29 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 
 	private void createMissingDirectories()
 	{
+		logger.debug("# called createMissingDirectories");
+
 		File baseFolder = appletParameters.getBaseFolder();
 		if(!baseFolder.exists()) {
-			baseFolder.mkdirs();
+			logger.info("Path " + baseFolder.getAbsolutePath() + " does not exist. Creating.");
+			boolean result = baseFolder.mkdirs();
+			logger.info("Creating directory " + baseFolder.getAbsolutePath() + " result: " + Boolean.toString(result));
 		}
 
 		File logPath = appletParameters.getLogPath();
 		if(!logPath.exists()) {
-			logPath.mkdirs();
+			logger.info("Path " + logPath.getAbsolutePath() + " does not exist. Creating.");
+			boolean result = logPath.mkdirs();
+			logger.info("Creating directory " + logPath.getAbsolutePath() + " result: " + Boolean.toString(result));
 		}
+
+		logger.debug("# completed createMissingDirectories");
 	}
 
 	private void logAppletInfo()
 	{
+		logger.debug("# called logAppletInfo");
+
 		GraphicsDevice primaryScreen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		GraphicsDevice[] allScreens = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
 		int myScreenIndex = -1, primaryScreenIndex = -1;
@@ -126,7 +140,7 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 			}
 		}
 
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date date = new Date();
 		DisplayMode displayMode = primaryScreen.getDisplayMode();
 		logger.info(
@@ -147,26 +161,38 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 						"Applet window is on screen " + myScreenIndex + "\n" +
 						"Primary screen is index " + primaryScreenIndex + "\n" +
 						"Primary screen resolution: " + displayMode.getWidth() + "x" + displayMode.getHeight() + "\n");
+
+		logger.debug("# completed logAppletInfo");
 	}
 
 	private void downloadBinaries() throws IOException, ScreenRecorderException
 	{
+		logger.debug("# called downloadBinaries");
+
 		BinariesDownloader binariesDownloader = new BinariesDownloader(getDocumentBase(), getCodeBase());
 		binariesDownloader.setDownloadCompleteNotifier(this);
 		binariesDownloader.download();
+
+		logger.debug("# completed downloadBinaries");
 	}
 
 	private void notifyView(NotificationType state, String message)
 	{
+		logger.debug("# called notifyView");
+
 		if(StringUtils.isBlank(message)) {
 			message = StringUtils.EMPTY;
 		}
 
 		jsCall(StandardMethodNames.SRA_STATUS_UPDATE, state, message);
+
+		logger.debug("# completed notifyView");
 	}
 
 	private void jsCall(String method, Object... parameters)
 	{
+		logger.debug("# called jsCall");
+
 		logger.debug(MessageFormat
 				.format("jsCall - method: {0}, parameters: {1}", method, StringUtils.join(parameters, ", ")));
 
@@ -176,12 +202,18 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 		}
 
 		jsBridge.call(method, parameters);
+
+		logger.debug("# completed jsCall");
 	}
 
 	@Override
 	public void onDownloadComplete()
 	{
+		logger.debug("# called onDownloadComplete");
+
 		notifyView(NotificationType.READY, null);
+
+		logger.debug("# completed onDownloadComplete");
 	}
 
 	/********************* JAVASCRIPT APIs START *********************/
@@ -189,7 +221,9 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 	@Override
 	public void startRecord(final String saveFolder, final String filename)
 	{
-		logger.debug("[JSAPI] startRecord");
+		logger.debug("# called startRecord");
+
+		logger.info("[JSAPI] startRecord");
 		AccessController.doPrivileged(new PrivilegedAction<Object>()
 		{
 			@Override
@@ -200,19 +234,23 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 					screenRecorder.setFilename(filename);
 					screenRecorder.recordScreen(new RecordingInfoNotifier());
 				} catch(Exception e) {
-					logger.error("Can't prepare and start the recording!", e);
+					logger.error("Can't prepare and start the recording", e);
 					notifyView(NotificationType.FATAL, null);
 				}
 
 				return null;
 			}
 		});
+
+		logger.debug("# completed startRecord");
 	}
 
 	@Override
 	public void stopRecord()
 	{
-		logger.debug("[JSAPI] stopRecord");
+		logger.debug("# called stopRecord");
+
+		logger.info("[JSAPI] stopRecord");
 		AccessController.doPrivileged(new PrivilegedAction<Object>()
 		{
 			@Override
@@ -228,6 +266,8 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 				return null;
 			}
 		});
+
+		logger.debug("# completed stopRecord");
 	}
 
 	/********************* JAVASCRIPT APIs END *********************/
