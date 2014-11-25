@@ -27,7 +27,7 @@ import java.util.List;
  */
 public abstract class RecorderThread extends Thread
 {
-	private static final Logger logger = LoggerFactory.getLogger(WindowsRecorderThread.class);
+	private static final Logger logger = LoggerFactory.getLogger(RecorderThread.class);
 
 	private static final int ERRORS_WINDOW_IN_SECONDS = 15;
 

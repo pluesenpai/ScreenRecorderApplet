@@ -3,6 +3,7 @@ package org.plue.screenrecorderapplet.services;
 import org.apache.commons.io.FilenameUtils;
 import org.plue.screenrecorderapplet.enums.NotificationType;
 import org.plue.screenrecorderapplet.exceptions.UnknownOperatingSystemException;
+import org.plue.screenrecorderapplet.threads.PhotoThread;
 import org.plue.screenrecorderapplet.threads.RecorderThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,8 @@ public class ScreenRecorder
 	private String filename;
 
 	private RecorderThread recorderThread;
+
+	private PhotoThread photoThread;
 
 	public void recordScreen(RecordingInfoNotifier recordingInfoNotifier)
 			throws IOException, UnknownOperatingSystemException
@@ -48,6 +51,19 @@ public class ScreenRecorder
 		recorderThread.stopRecording();
 
 		logger.debug("# completed stopRecord");
+	}
+
+	public void takePhotoFromWebcam(String saveFolder, String filename)
+			throws IOException, UnknownOperatingSystemException
+	{
+		logger.debug("# called screenRecorder.takePhoto");
+
+		String outputFileFullPath = FilenameUtils.concat(saveFolder, filename);
+		logger.info("Starting record. Output file path: " + outputFileFullPath);
+		photoThread = PhotoThread.newInstance(outputFileFullPath);
+		photoThread.start();
+
+		logger.debug("# completed screenRecorder.takePhoto");
 	}
 
 	public void setSaveFolder(String saveFolder)

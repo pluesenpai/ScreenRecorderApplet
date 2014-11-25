@@ -270,6 +270,37 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 		logger.debug("# completed stopRecord");
 	}
 
+	@Override
+	public void takePhotoFromWebcam(final String saveFolder, final String filename)
+	{
+		logger.debug("# called takePhotoFromWebcam");
+
+		logger.info("[JSAPI] takePhotoFromWebcam");
+		AccessController.doPrivileged(new PrivilegedAction<Object>()
+		{
+			@Override
+			public Object run()
+			{
+				try {
+					screenRecorder.takePhotoFromWebcam(saveFolder, filename);
+				} catch(Exception e) {
+					logger.error("Can't prepare and start the recording", e);
+					notifyView(NotificationType.FATAL, null);
+				}
+
+				return null;
+			}
+		});
+
+		logger.debug("# completed takePhotoFromWebcam");
+	}
+
+	@Override
+	public void takeScreenshot(String saveFolder, String filename)
+	{
+		// TODO
+	}
+
 	/********************* JAVASCRIPT APIs END *********************/
 
 	private class RecordingInfoNotifier implements ScreenRecorder.RecordingInfoNotifier
