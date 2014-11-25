@@ -1,4 +1,4 @@
-package org.plue.screenrecorderapplet.threads;
+package org.plue.screenrecorderapplet.threads.photo;
 
 import org.apache.commons.lang.StringUtils;
 import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
@@ -40,21 +42,37 @@ public abstract class PhotoThread extends Thread
 		logger.debug("# completed constructor");
 	}
 
-	public static PhotoThread newInstance(String outputFileFullPath)
-			throws IOException, UnknownOperatingSystemException
+	public static PhotoThread newInstance(String outputFileFullPath) throws IOException, ScreenRecorderException
 	{
 		logger.debug("# called newInstance");
 
 		AppletParameters appletParameters = AppletParameters.getInstance();
-		AppletParameters.OperatingSystem operatingSystem = appletParameters.getOperatingSystem();
-		if(operatingSystem == AppletParameters.OperatingSystem.WINDOWS) {
-			logger.info("Using WindowsPhotoThread");
-			logger.debug("# completed newInstance");
-			return new WindowsPhotoThread(outputFileFullPath);
+		Class<? extends PhotoThread> photoThreadClass = appletParameters.getPhotoThreadClass();
+		if(photoThreadClass == null) {
+			logger.error("Unknown or unsupported operating system: '" + appletParameters.getOperatingSystem().toString() + "'");
+			throw new UnknownOperatingSystemException();
 		}
 
-		logger.error("Unknown or unsupported operating system: '" + operatingSystem.toString() + "'");
-		throw new UnknownOperatingSystemException();
+		try {
+			logger.debug("Using class " + photoThreadClass.getSimpleName());
+			Constructor<? extends PhotoThread> constructor = photoThreadClass.getConstructor(String.class);
+			PhotoThread photoThread = constructor.newInstance(outputFileFullPath);
+			logger.debug("# completed newInstance");
+
+			return photoThread;
+		} catch(NoSuchMethodException e) {
+			logger.error("Error while initializing PhotoThread", e);
+			throw new RuntimeException(e);
+		} catch(IllegalAccessException e) {
+			logger.error("Error while initializing PhotoThread", e);
+			throw new RuntimeException(e);
+		} catch(InstantiationException e) {
+			logger.error("Error while initializing PhotoThread", e);
+			throw new RuntimeException(e);
+		} catch(InvocationTargetException e) {
+			logger.error("Error while initializing PhotoThread", e);
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

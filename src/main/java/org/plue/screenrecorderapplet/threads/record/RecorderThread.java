@@ -1,4 +1,4 @@
-package org.plue.screenrecorderapplet.threads;
+package org.plue.screenrecorderapplet.threads.record;
 
 import org.apache.commons.lang.StringUtils;
 import org.plue.screenrecorderapplet.enums.NotificationType;
@@ -15,6 +15,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
@@ -78,19 +80,33 @@ public abstract class RecorderThread extends Thread
 		logger.debug("# called newInstance");
 
 		AppletParameters appletParameters = AppletParameters.getInstance();
-		AppletParameters.OperatingSystem operatingSystem = appletParameters.getOperatingSystem();
-		if(operatingSystem == AppletParameters.OperatingSystem.WINDOWS) {
-			logger.info("Using WindowsRecorderThread");
-			logger.debug("# completed newInstance");
-			return new WindowsRecorderThread(outputFileFullPath, recordingInfoNotifier);
-		} else if(operatingSystem == AppletParameters.OperatingSystem.LINUX) {
-			logger.info("Using LinuxRecorderThread");
-			logger.debug("# completed newInstance");
-			return new LinuxRecorderThread(outputFileFullPath, recordingInfoNotifier);
+		Class<? extends RecorderThread> recorderThreadClass = appletParameters.getRecorderThreadClass();
+		if(recorderThreadClass == null) {
+			logger.error("Unknown or unsupported operating system: '" + appletParameters.getOperatingSystem().toString() + "'");
+			throw new UnknownOperatingSystemException();
 		}
 
-		logger.error("Unknown or unsupported operating system: '" + operatingSystem.toString() + "'");
-		throw new UnknownOperatingSystemException();
+		try {
+			logger.debug("Using class " + recorderThreadClass.getSimpleName());
+			Constructor<? extends RecorderThread> constructor = recorderThreadClass.getConstructor(String.class,
+					ScreenRecorder.RecordingInfoNotifier.class);
+			RecorderThread recorderThread = constructor.newInstance(outputFileFullPath, recordingInfoNotifier);
+			logger.debug("# completed newInstance");
+
+			return recorderThread;
+		} catch(NoSuchMethodException e) {
+			logger.error("Error while initializing RecorderThread", e);
+			throw new RuntimeException(e);
+		} catch(IllegalAccessException e) {
+			logger.error("Error while initializing RecorderThread", e);
+			throw new RuntimeException(e);
+		} catch(InstantiationException e) {
+			logger.error("Error while initializing RecorderThread", e);
+			throw new RuntimeException(e);
+		} catch(InvocationTargetException e) {
+			logger.error("Error while initializing RecorderThread", e);
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

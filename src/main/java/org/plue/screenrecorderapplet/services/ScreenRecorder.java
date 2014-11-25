@@ -2,9 +2,10 @@ package org.plue.screenrecorderapplet.services;
 
 import org.apache.commons.io.FilenameUtils;
 import org.plue.screenrecorderapplet.enums.NotificationType;
+import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
 import org.plue.screenrecorderapplet.exceptions.UnknownOperatingSystemException;
-import org.plue.screenrecorderapplet.threads.PhotoThread;
-import org.plue.screenrecorderapplet.threads.RecorderThread;
+import org.plue.screenrecorderapplet.threads.photo.PhotoThread;
+import org.plue.screenrecorderapplet.threads.record.RecorderThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +55,7 @@ public class ScreenRecorder
 	}
 
 	public void takePhotoFromWebcam(String saveFolder, String filename)
-			throws IOException, UnknownOperatingSystemException
+			throws IOException, ScreenRecorderException
 	{
 		logger.debug("# called screenRecorder.takePhoto");
 

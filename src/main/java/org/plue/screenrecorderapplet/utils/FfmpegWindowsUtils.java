@@ -3,7 +3,10 @@ package org.plue.screenrecorderapplet.utils;
 import it.sinossi.commons.systemexecutor.SystemCommandExecutor;
 import it.sinossi.commons.systemexecutor.SystemProcessResult;
 import org.apache.commons.lang.StringUtils;
+import org.plue.screenrecorderapplet.exceptions.RetrieveFFMpegCommandException;
 import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
+import org.plue.screenrecorderapplet.models.ffmpeg.FfmpegDevice;
+import org.plue.screenrecorderapplet.models.ffmpeg.FfmpegDevices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +33,7 @@ public class FfmpegWindowsUtils
 		String ffmpegListCommand = ffmpegPath + " -list_devices true -f dshow -i dummy 2>&1";
 		logger.info("Executing " + ffmpegListCommand);
 
-		SystemProcessResult result = SystemCommandExecutor.execute(parseParameters(ffmpegListCommand));
+		SystemProcessResult result = SystemCommandExecutor.execute(StringUtils.split(ffmpegListCommand, " "));
 		logger.debug("enumerateDirectshowDevices - stderr");
 		logger.debug(result.getError());
 		logger.debug("enumerateDirectshowDevices - stdout");
@@ -61,9 +64,9 @@ public class FfmpegWindowsUtils
 
 		FfmpegDevices ffmpegDevices = new FfmpegDevices();
 		logger.info("Parsing audio devices");
-		ffmpegDevices.audioDevices = parseWithIndexes(audio);
+		ffmpegDevices.setAudioDevices(parseWithIndexes(audio));
 		logger.info("Parsing video devices");
-		ffmpegDevices.videoDevices = parseWithIndexes(video);
+		ffmpegDevices.setVideoDevices(parseWithIndexes(video));
 
 		logger.debug("# completed enumerateDirectshowDevices");
 
@@ -104,92 +107,5 @@ public class FfmpegWindowsUtils
 		logger.debug("# completed parseWithIndexes");
 
 		return ffmpegDevices;
-	}
-
-	private static String[] parseParameters(String commandLine)
-	{
-		return StringUtils.split(commandLine, " ");
-	}
-
-	public static class FfmpegDevice
-	{
-		private int index;
-
-		private String name;
-
-		public FfmpegDevice(int index, String name)
-		{
-			this.index = index;
-			this.name = name;
-		}
-
-		public int getIndex()
-		{
-			return index;
-		}
-
-		public void setIndex(int index)
-		{
-			this.index = index;
-		}
-
-		public String getName()
-		{
-			return name;
-		}
-
-		public void setName(String name)
-		{
-			this.name = name;
-		}
-	}
-
-	public static class FfmpegDevices
-	{
-		private List<FfmpegDevice> audioDevices;
-
-		private List<FfmpegDevice> videoDevices;
-
-		public List<FfmpegDevice> getAudioDevices()
-		{
-			return audioDevices;
-		}
-
-		public void setAudioDevices(List<FfmpegDevice> audioDevices)
-		{
-			this.audioDevices = audioDevices;
-		}
-
-		public List<FfmpegDevice> getVideoDevices()
-		{
-			return videoDevices;
-		}
-
-		public void setVideoDevices(List<FfmpegDevice> videoDevices)
-		{
-			this.videoDevices = videoDevices;
-		}
-	}
-
-	public static class RetrieveFFMpegCommandException extends ScreenRecorderException
-	{
-		private RetrieveFFMpegCommandException()
-		{
-		}
-
-		public RetrieveFFMpegCommandException(String message)
-		{
-			super(message);
-		}
-
-		private RetrieveFFMpegCommandException(String message, Throwable cause)
-		{
-			super(message, cause);
-		}
-
-		private RetrieveFFMpegCommandException(Throwable cause)
-		{
-			super(cause);
-		}
 	}
 }

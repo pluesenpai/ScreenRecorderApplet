@@ -15,9 +15,24 @@ public class LinuxAppletParameters extends AppletParameters
 {
 	private static final Logger logger = LoggerFactory.getLogger(LinuxAppletParameters.class);
 
+	private File v4l2CtlPath;
+
 	LinuxAppletParameters() throws IOException
 	{
 		super();
+
+		readV4LBinaryPath();
+	}
+
+	private void readV4LBinaryPath()
+	{
+		logger.debug("# called readV4LBinaryPath");
+
+		String v4lctlBinaryPath = FilenameUtils.concat(getBinFolder().getAbsolutePath(), "v4l-ctl");
+		logger.info("Retrieved v4l-ctl Binary Path: '" + v4lctlBinaryPath + "'");
+
+		this.v4l2CtlPath = new File(v4lctlBinaryPath);
+		logger.debug("# completed readV4LBinaryPath");
 	}
 
 	@Override
@@ -51,7 +66,7 @@ public class LinuxAppletParameters extends AppletParameters
 	{
 		logger.debug("# called readTmpFolder");
 
-		this.tmpFolder = new File(System.getenv("TEMP"));
+		this.tmpFolder = new File(System.getProperty("java.io.tmpdir"));
 		logger.info("Retrieved temp folder: '" + tmpFolder + "'");
 
 		logger.debug("# completed readTmpFolder");
@@ -73,5 +88,10 @@ public class LinuxAppletParameters extends AppletParameters
 	public OperatingSystem getOperatingSystem()
 	{
 		return OperatingSystem.LINUX;
+	}
+
+	public File getV4l2CtlPath()
+	{
+		return v4l2CtlPath;
 	}
 }

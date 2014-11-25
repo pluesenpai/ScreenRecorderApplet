@@ -1,7 +1,9 @@
-package org.plue.screenrecorderapplet.threads;
+package org.plue.screenrecorderapplet.threads.record;
 
 import org.apache.commons.lang.StringUtils;
 import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
+import org.plue.screenrecorderapplet.models.ffmpeg.FfmpegDevice;
+import org.plue.screenrecorderapplet.models.ffmpeg.FfmpegDevices;
 import org.plue.screenrecorderapplet.services.ScreenRecorder;
 import org.plue.screenrecorderapplet.utils.FfmpegWindowsUtils;
 import org.slf4j.Logger;
@@ -33,7 +35,7 @@ public class WindowsRecorderThread extends RecorderThread
 		logger.debug("# called getFFmpegCommand");
 
 		String ffmpegBinaryPath = appletParameters.getFFmpegBinaryPath().getAbsolutePath();
-		FfmpegWindowsUtils.FfmpegDevices directshowDevices = FfmpegWindowsUtils.enumerateDirectshowDevices(
+		FfmpegDevices directshowDevices = FfmpegWindowsUtils.enumerateDirectshowDevices(
 				ffmpegBinaryPath);
 		String inputs = combineDevicesForFfmpegInput(directshowDevices);
 		String codecs = "-vcodec libx264 -pix_fmt yuv420p -preset ultrafast -bufsize 600k -threads 0 -tune zerolatency -vsync vfr -acodec libmp3lame";
@@ -47,15 +49,15 @@ public class WindowsRecorderThread extends RecorderThread
 		return command;
 	}
 
-	private String combineDevicesForFfmpegInput(FfmpegWindowsUtils.FfmpegDevices ffmpegDevices)
+	private String combineDevicesForFfmpegInput(FfmpegDevices ffmpegDevices)
 	{
 		logger.debug("# called combineDevicesForFfmpegInput");
 
-		List<FfmpegWindowsUtils.FfmpegDevice> audioDevices = ffmpegDevices.getAudioDevices();
+		List<FfmpegDevice> audioDevices = ffmpegDevices.getAudioDevices();
 
 		String audioDeviceString = "";
 
-		for(FfmpegWindowsUtils.FfmpegDevice audioDevice : audioDevices) {
+		for(FfmpegDevice audioDevice : audioDevices) {
 			audioDeviceString += MessageFormat
 					.format("-f dshow -audio_device_number {0} -i audio=\"{1}\" ", audioDevice.getIndex(),
 							audioDevice.getName());
@@ -64,7 +66,7 @@ public class WindowsRecorderThread extends RecorderThread
 
 		Integer uScreenCaptureKey = -1;
 		Integer screenCaptureRecorderKey = -1;
-		List<FfmpegWindowsUtils.FfmpegDevice> videoDevices = ffmpegDevices.getVideoDevices();
+		List<FfmpegDevice> videoDevices = ffmpegDevices.getVideoDevices();
 
 		for(int i = 0; i < videoDevices.size(); i++) {
 			if(StringUtils.equals(videoDevices.get(i).getName(), U_SCREEN_CAPTURE)) {

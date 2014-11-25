@@ -1,4 +1,4 @@
-package org.plue.screenrecorderapplet.threads;
+package org.plue.screenrecorderapplet.threads.record;
 
 import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
 import org.plue.screenrecorderapplet.services.ScreenRecorder;

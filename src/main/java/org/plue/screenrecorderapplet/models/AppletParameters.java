@@ -2,6 +2,11 @@ package org.plue.screenrecorderapplet.models;
 
 import org.apache.commons.io.FilenameUtils;
 import org.plue.screenrecorderapplet.exceptions.UnknownOperatingSystemException;
+import org.plue.screenrecorderapplet.threads.photo.LinuxPhotoThread;
+import org.plue.screenrecorderapplet.threads.photo.PhotoThread;
+import org.plue.screenrecorderapplet.threads.photo.WindowsPhotoThread;
+import org.plue.screenrecorderapplet.threads.record.RecorderThread;
+import org.plue.screenrecorderapplet.threads.record.WindowsRecorderThread;
 import org.plue.screenrecorderapplet.utils.OperatingSystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +37,17 @@ public abstract class AppletParameters
 
 	private static AppletParameters instance;
 
+	private static Class<? extends RecorderThread> recorderThreadClass = null;
+
+	private static Class<? extends PhotoThread> photoThreadClass = null;
+
 	public static AppletParameters getInstance() throws IOException, UnknownOperatingSystemException
 	{
 		logger.debug("# called getInstance");
 
 		if(instance == null) {
 			logger.debug("Applet parameters instance was null. Creating new one");
-			instance = getAppletParametersInstance();
+			instance = prepareOsSpecificClasses();
 		}
 
 		logger.debug("# completed getInstance");
@@ -46,23 +55,27 @@ public abstract class AppletParameters
 		return instance;
 	}
 
-	private static AppletParameters getAppletParametersInstance() throws UnknownOperatingSystemException, IOException
+	private static AppletParameters prepareOsSpecificClasses() throws UnknownOperatingSystemException, IOException
 	{
-		logger.debug("# called getAppletParametersInstance");
+		logger.debug("# called prepareOsSpecificClasses");
 
 		AppletParameters appletParameters;
 		if(OperatingSystemUtils.isWindows()) {
 			logger.info("Using WindowsAppletParameters");
 			appletParameters = new WindowsAppletParameters();
+			photoThreadClass = WindowsPhotoThread.class;
+			recorderThreadClass = WindowsRecorderThread.class;
 		} else if(OperatingSystemUtils.isLinux()) {
 			logger.info("Using LinuxAppletParameters");
 			appletParameters = new LinuxAppletParameters();
+			photoThreadClass = LinuxPhotoThread.class;
+			recorderThreadClass = WindowsRecorderThread.class;
 		} else {
 			logger.error("Unknown or unsupported operating system: '" + OperatingSystemUtils.getOSName() + "'");
 			throw new UnknownOperatingSystemException(MessageFormat.format("Unknown OS {0}", OperatingSystemUtils.getOSName()));
 		}
 
-		logger.debug("# completed getAppletParametersInstance");
+		logger.debug("# completed prepareOsSpecificClasses");
 
 		return appletParameters;
 	}
@@ -130,6 +143,16 @@ public abstract class AppletParameters
 	public abstract File getFFmpegBinaryPath();
 
 	public abstract OperatingSystem getOperatingSystem();
+
+	public Class<? extends RecorderThread> getRecorderThreadClass()
+	{
+		return recorderThreadClass;
+	}
+
+	public Class<? extends PhotoThread> getPhotoThreadClass()
+	{
+		return photoThreadClass;
+	}
 
 	public enum OperatingSystem
 	{
