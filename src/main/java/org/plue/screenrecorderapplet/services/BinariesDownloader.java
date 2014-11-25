@@ -104,7 +104,7 @@ public class BinariesDownloader
 
 		File binFolder = appletParameters.getBinFolder();
 		URL documentBase = getDocumentBase();
-		String hostUrl = documentBase.getProtocol() + "://" + documentBase.getHost();
+		String hostUrl = documentBase.getProtocol() + "://" + documentBase.getHost() + ":" + documentBase.getPort();
 		String zipFilename = binFolder.getName() + ".zip";
 
 		String url = hostUrl + "/" + zipFilename;
