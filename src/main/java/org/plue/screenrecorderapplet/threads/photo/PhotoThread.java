@@ -55,7 +55,8 @@ public abstract class PhotoThread extends Thread
 
 		try {
 			logger.debug("Using class " + photoThreadClass.getSimpleName());
-			Constructor<? extends PhotoThread> constructor = photoThreadClass.getConstructor(String.class);
+			Constructor<? extends PhotoThread> constructor = photoThreadClass.getDeclaredConstructor(String.class);
+			constructor.setAccessible(true);
 			PhotoThread photoThread = constructor.newInstance(outputFileFullPath);
 			logger.debug("# completed newInstance");
 

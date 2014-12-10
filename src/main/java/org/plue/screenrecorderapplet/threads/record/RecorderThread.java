@@ -88,8 +88,9 @@ public abstract class RecorderThread extends Thread
 
 		try {
 			logger.debug("Using class " + recorderThreadClass.getSimpleName());
-			Constructor<? extends RecorderThread> constructor = recorderThreadClass.getConstructor(String.class,
+			Constructor<? extends RecorderThread> constructor = recorderThreadClass.getDeclaredConstructor(String.class,
 					ScreenRecorder.RecordingInfoNotifier.class);
+			constructor.setAccessible(true);
 			RecorderThread recorderThread = constructor.newInstance(outputFileFullPath, recordingInfoNotifier);
 			logger.debug("# completed newInstance");
 
