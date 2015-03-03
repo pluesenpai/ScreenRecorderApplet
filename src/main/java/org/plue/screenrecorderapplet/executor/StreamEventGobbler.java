@@ -1,4 +1,4 @@
-package org.plue.screenrecorderapplet.models;
+package org.plue.screenrecorderapplet.executor;
 
 import org.apache.log4j.Logger;
 
@@ -18,22 +18,19 @@ import java.util.Map;
  * @author Daniel Dixon (http://www.danieldixon.com)
  * @author paolo86@altervista.org
  */
-public class StreamGobbler extends Thread
+public class StreamEventGobbler extends Thread
 {
-	private static Logger logger = Logger.getLogger(StreamGobbler.class);
+	private static Logger logger = Logger.getLogger(StreamEventGobbler.class);
 
-	private InputStream is;
-
-	private boolean discardOutput;
+	private InputStream inputStream;
 
 	private String prefix;
 
 	private Map<String, EventListenerList> listeners;
 
-	public StreamGobbler(InputStream is, boolean discard, String prefix)
+	public StreamEventGobbler(InputStream inputStream, String prefix)
 	{
-		this.is = is;
-		this.discardOutput = discard;
+		this.inputStream = inputStream;
 		this.prefix = prefix;
 		this.listeners = new HashMap<String, EventListenerList>();
 	}
@@ -42,13 +39,11 @@ public class StreamGobbler extends Thread
 	public void run()
 	{
 		try {
-			InputStreamReader isr = new InputStreamReader(is);
-			BufferedReader br = new BufferedReader(isr);
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
 			String line;
-			while((line = br.readLine()) != null) {
-				if(!discardOutput) {
-					logger.info(prefix + ": " + line);
-				}
+			while((line = bufferedReader.readLine()) != null) {
+				logger.info(prefix + ": " + line);
 
 				for(String word : listeners.keySet()) {
 					if(line.contains(word)) {
@@ -61,19 +56,19 @@ public class StreamGobbler extends Thread
 		}
 	}
 
-	public void addActionListener(String word, ActionListener l)
+	public void addActionListener(String word, ActionListener actionListener)
 	{
 		if(!listeners.containsKey(word)) {
 			listeners.put(word, new EventListenerList());
 		}
 
-		listeners.get(word).add(ActionListener.class, l);
+		listeners.get(word).add(ActionListener.class, actionListener);
 	}
 
-	public void removeActionListener(ActionListener l)
+	public void removeActionListener(ActionListener actionListener)
 	{
-		for(EventListenerList forWord : listeners.values()) {
-			forWord.remove(ActionListener.class, l);
+		for(EventListenerList eventListener : listeners.values()) {
+			eventListener.remove(ActionListener.class, actionListener);
 		}
 	}
 
@@ -88,7 +83,7 @@ public class StreamGobbler extends Thread
 			if(forWord[i] == ActionListener.class) {
 				// Lazily create the event:
 				if(e == null) {
-					e = new ActionEvent(StreamGobbler.this, ActionEvent.ACTION_PERFORMED, line);
+					e = new ActionEvent(StreamEventGobbler.this, ActionEvent.ACTION_PERFORMED, line);
 				}
 
 				((ActionListener) forWord[i + 1]).actionPerformed(e);
@@ -100,6 +95,6 @@ public class StreamGobbler extends Thread
 	protected void finalize() throws Throwable
 	{
 		super.finalize();
-		is.close();
+		inputStream.close();
 	}
 }

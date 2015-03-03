@@ -140,9 +140,10 @@ public class BinariesDownloader
 	{
 		logger.debug("# called doDownload");
 
+		HttpClient httpClient = HttpClientBuilder.create().build();
+
 		logger.info("Downloading from URL " + url + " to path " + saveTo);
 		String downloadURL = url + "?" + Math.random() * 10000;
-		HttpClient httpClient = HttpClientBuilder.create().build();
 		HttpGet request = new HttpGet(downloadURL);
 
 		HttpResponse response = httpClient.execute(request);

@@ -1,10 +1,10 @@
 package org.plue.screenrecorderapplet.threads.photo;
 
-import it.sinossi.commons.systemexecutor.SystemCommandExecutor;
-import it.sinossi.commons.systemexecutor.SystemProcessResult;
 import org.apache.commons.lang.StringUtils;
 import org.plue.screenrecorderapplet.exceptions.RetrieveFFMpegCommandException;
 import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
+import org.plue.screenrecorderapplet.executor.CommandExecutor;
+import org.plue.screenrecorderapplet.executor.ProcessResult;
 import org.plue.screenrecorderapplet.models.LinuxAppletParameters;
 import org.plue.screenrecorderapplet.models.ffmpeg.FfmpegDevice;
 import org.plue.screenrecorderapplet.models.ffmpeg.FfmpegDevices;
@@ -52,19 +52,27 @@ public class LinuxPhotoThread extends PhotoThread
 		String v4l2CtlCommand = v4l2CtlPath + " --list-devices";
 		logger.info("Executing " + v4l2CtlCommand);
 
-		SystemProcessResult result = SystemCommandExecutor.execute(StringUtils.split(v4l2CtlCommand, " "));
-		logger.debug("getV4LDevices - stderr");
-		logger.debug(result.getError());
-		logger.debug("getV4LDevices - stdout");
-		logger.debug(result.getOutput());
-
-		if(result.getExitCode() != 1) {
-			String message = "Error while listing devices. Exit code: " + result.getExitCode();
-			logger.error(message);
-			throw new RetrieveFFMpegCommandException(message);
+		ProcessResult result;
+		try {
+			result = new CommandExecutor(StringUtils.split(v4l2CtlCommand, " ")).run();
+		} catch(Exception e) {
+			String message = "Error while listing devices. Got exception: ";
+			logger.error(message, e);
+			throw new RetrieveFFMpegCommandException(message, e); // FIXME: change exception
 		}
 
-		String output = result.getError();
+		logger.debug("getV4LDevices - stderr");
+		logger.debug(result.getStderr());
+		logger.debug("getV4LDevices - stdout");
+		logger.debug(result.getStdout());
+
+		if(result.getReturnCode() != 1) {
+			String message = "Error while listing devices. Exit code: " + result.getReturnCode();
+			logger.error(message);
+			throw new RetrieveFFMpegCommandException(message); // FIXME: change exception
+		}
+
+		String output = result.getStderr();
 		FfmpegDevices webcamDevices = getWebcamDevices(output);
 		logger.info(MessageFormat.format("getV4LDevices - found {0} webcams", webcamDevices.getVideoDevices().size()));
 

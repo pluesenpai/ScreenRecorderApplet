@@ -5,7 +5,7 @@ import org.plue.screenrecorderapplet.enums.NotificationType;
 import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
 import org.plue.screenrecorderapplet.exceptions.UnknownOperatingSystemException;
 import org.plue.screenrecorderapplet.models.AppletParameters;
-import org.plue.screenrecorderapplet.models.StreamGobbler;
+import org.plue.screenrecorderapplet.executor.StreamEventGobbler;
 import org.plue.screenrecorderapplet.services.ScreenRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +16,6 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
@@ -45,9 +44,9 @@ public abstract class RecorderThread extends Thread
 
 	private Process recordingProcess;
 
-	private StreamGobbler errorGobbler;
+	private StreamEventGobbler errorGobbler;
 
-	private StreamGobbler inputGobbler;
+	private StreamEventGobbler inputGobbler;
 
 	private Timer timer;
 
@@ -95,16 +94,7 @@ public abstract class RecorderThread extends Thread
 			logger.debug("# completed newInstance");
 
 			return recorderThread;
-		} catch(NoSuchMethodException e) {
-			logger.error("Error while initializing RecorderThread", e);
-			throw new RuntimeException(e);
-		} catch(IllegalAccessException e) {
-			logger.error("Error while initializing RecorderThread", e);
-			throw new RuntimeException(e);
-		} catch(InstantiationException e) {
-			logger.error("Error while initializing RecorderThread", e);
-			throw new RuntimeException(e);
-		} catch(InvocationTargetException e) {
+		} catch(Exception e) {
 			logger.error("Error while initializing RecorderThread", e);
 			throw new RuntimeException(e);
 		}
@@ -149,8 +139,8 @@ public abstract class RecorderThread extends Thread
 
 						recordingProcess = pb.start();
 
-						errorGobbler = new StreamGobbler(recordingProcess.getErrorStream(), false, "ffmpeg E");
-						inputGobbler = new StreamGobbler(recordingProcess.getInputStream(), false, "ffmpeg O");
+						inputGobbler = new StreamEventGobbler(recordingProcess.getInputStream(), "ffmpeg O");
+						errorGobbler = new StreamEventGobbler(recordingProcess.getErrorStream(), "ffmpeg E");
 
 						logger.info("Starting listener threads...");
 						errorGobbler.start();

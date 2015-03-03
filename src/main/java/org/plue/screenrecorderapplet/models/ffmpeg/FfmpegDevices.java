@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author p.cortis@sinossi.it
+ * @author paolo86@altervista.org
  */
 public class FfmpegDevices
 {

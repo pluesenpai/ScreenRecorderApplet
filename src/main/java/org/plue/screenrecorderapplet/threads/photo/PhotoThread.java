@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author p.cortis@sinossi.it
+ * @author paolo86@altervista.org
  */
 public abstract class PhotoThread extends Thread
 {

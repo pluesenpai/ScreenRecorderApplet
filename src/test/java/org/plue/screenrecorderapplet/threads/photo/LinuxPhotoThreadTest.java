@@ -8,7 +8,7 @@ import org.testng.annotations.Test;
 import java.util.List;
 
 /**
- * @author p.cortis@sinossi.it
+ * @author paolo86@altervista.org
  */
 public class LinuxPhotoThreadTest
 {

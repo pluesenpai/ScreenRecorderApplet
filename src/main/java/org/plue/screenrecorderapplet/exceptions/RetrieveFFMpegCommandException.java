@@ -1,7 +1,7 @@
 package org.plue.screenrecorderapplet.exceptions;
 
 /**
- * @author p.cortis@sinossi.it
+ * @author paolo86@altervista.org
  */
 public class RetrieveFFMpegCommandException extends ScreenRecorderException
 {
@@ -14,12 +14,12 @@ public class RetrieveFFMpegCommandException extends ScreenRecorderException
 		super(message);
 	}
 
-	private RetrieveFFMpegCommandException(String message, Throwable cause)
+	public RetrieveFFMpegCommandException(String message, Throwable cause)
 	{
 		super(message, cause);
 	}
 
-	private RetrieveFFMpegCommandException(Throwable cause)
+	public RetrieveFFMpegCommandException(Throwable cause)
 	{
 		super(cause);
 	}

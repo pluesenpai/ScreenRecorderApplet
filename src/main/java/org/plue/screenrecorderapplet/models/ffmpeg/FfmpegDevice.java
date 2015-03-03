@@ -1,7 +1,7 @@
 package org.plue.screenrecorderapplet.models.ffmpeg;
 
 /**
- * @author p.cortis@sinossi.it
+ * @author paolo86@altervista.org
  */
 public class FfmpegDevice
 {

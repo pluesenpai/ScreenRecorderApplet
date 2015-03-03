@@ -1,10 +1,10 @@
 package org.plue.screenrecorderapplet.utils;
 
-import it.sinossi.commons.systemexecutor.SystemCommandExecutor;
-import it.sinossi.commons.systemexecutor.SystemProcessResult;
 import org.apache.commons.lang.StringUtils;
 import org.plue.screenrecorderapplet.exceptions.RetrieveFFMpegCommandException;
 import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
+import org.plue.screenrecorderapplet.executor.CommandExecutor;
+import org.plue.screenrecorderapplet.executor.ProcessResult;
 import org.plue.screenrecorderapplet.models.ffmpeg.FfmpegDevice;
 import org.plue.screenrecorderapplet.models.ffmpeg.FfmpegDevices;
 import org.slf4j.Logger;
@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author p.cortis@sinossi.it
+ * @author paolo86@altervista.org
  */
 public class FfmpegWindowsUtils
 {
@@ -33,19 +33,27 @@ public class FfmpegWindowsUtils
 		String ffmpegListCommand = ffmpegPath + " -list_devices true -f dshow -i dummy 2>&1";
 		logger.info("Executing " + ffmpegListCommand);
 
-		SystemProcessResult result = SystemCommandExecutor.execute(StringUtils.split(ffmpegListCommand, " "));
-		logger.debug("enumerateDirectshowDevices - stderr");
-		logger.debug(result.getError());
-		logger.debug("enumerateDirectshowDevices - stdout");
-		logger.debug(result.getOutput());
+		ProcessResult result;
+		try {
+			result = new CommandExecutor(StringUtils.split(ffmpegListCommand, " ")).run();
+		} catch(Exception e) {
+			String message = "Error while listing devices. Got exception: ";
+			logger.error(message, e);
+			throw new RetrieveFFMpegCommandException(message, e);
+		}
 
-		if(result.getExitCode() != 1) {
-			String message = "Error while listing devices. Exit code: " + result.getExitCode();
+		logger.debug("enumerateDirectshowDevices - stderr");
+		logger.debug(result.getStderr());
+		logger.debug("enumerateDirectshowDevices - stdout");
+		logger.debug(result.getStdout());
+
+		if(result.getReturnCode() != 1) {
+			String message = "Error while listing devices. Exit code: " + result.getReturnCode();
 			logger.error(message);
 			throw new RetrieveFFMpegCommandException(message);
 		}
 
-		String output = result.getError();
+		String output = result.getStderr();
 		String[] ffmpegSplittedOutput = output.split("DirectShow");
 		if(ffmpegSplittedOutput.length < 3) {
 			String message = "Error splitting output. Number of parts: " + ffmpegSplittedOutput.length
