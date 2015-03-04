@@ -18,13 +18,13 @@ public class ProxyConfiguration
 	public ProxyConfiguration(Applet applet) throws BinariesDownloadException
 	{
 		String proxyProtocol = applet.getParameter("proxy_protocol");
-		protocol = validateProxyProtocol(proxyProtocol);
+		this.protocol = validateProxyProtocol(proxyProtocol);
 
 		String host = applet.getParameter("host");
-		host = validateHost(host);
+		this.host = validateHost(host);
 
 		String portAsString = applet.getParameter("port");
-		port = validatePort(portAsString);
+		this.port = validatePort(portAsString);
 	}
 
 	private static BaseProxy.ProxyProtocol validateProxyProtocol(String proxyProtocol) throws BinariesDownloadException
