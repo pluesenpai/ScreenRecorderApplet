@@ -10,12 +10,15 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.plue.screenrecorderapplet.exceptions.BinariesDownloadException;
 import org.plue.screenrecorderapplet.exceptions.OldBinariesCleanupException;
 import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
 import org.plue.screenrecorderapplet.exceptions.UnknownOperatingSystemException;
 import org.plue.screenrecorderapplet.models.AppletParameters;
+import org.plue.screenrecorderapplet.services.proxy.BaseProxy;
+import org.plue.screenrecorderapplet.services.proxy.NoProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +44,8 @@ public class BinariesDownloader
 
 	private DownloadCompleteNotifier downloadCompleteNotifier;
 
+	private BaseProxy proxy;
+
 	public BinariesDownloader(URL documentBase, URL codeBase) throws IOException, UnknownOperatingSystemException
 	{
 		logger.debug("# called constructor");
@@ -48,6 +53,19 @@ public class BinariesDownloader
 		this.appletParameters = AppletParameters.getInstance();
 		this.documentBase = documentBase;
 		this.codeBase = codeBase;
+		this.proxy = new NoProxy();
+
+		logger.debug("# completed constructor");
+	}
+
+	public BinariesDownloader(URL documentBase, URL codeBase, BaseProxy proxy) throws IOException, UnknownOperatingSystemException
+	{
+		logger.debug("# called constructor");
+
+		this.appletParameters = AppletParameters.getInstance();
+		this.documentBase = documentBase;
+		this.codeBase = codeBase;
+		this.proxy = proxy;
 
 		logger.debug("# completed constructor");
 	}
@@ -88,7 +106,7 @@ public class BinariesDownloader
 				FileUtils.deleteDirectory(file);
 				if(file.exists()) {
 					logger.error("Delete failed for directory " + file.getAbsolutePath());
-					throw new OldBinariesCleanupException("Could not delete the old native extentions!");
+					throw new OldBinariesCleanupException("Could not delete the old native extensions!");
 				} else {
 					logger.info("Delete completed for directory " + file.getAbsolutePath());
 				}
@@ -146,7 +164,7 @@ public class BinariesDownloader
 		String downloadURL = url + "?" + Math.random() * 10000;
 		HttpGet request = new HttpGet(downloadURL);
 
-		HttpResponse response = httpClient.execute(request);
+		HttpResponse response = httpClient.execute(request, getHttpClientContext());
 		int statusCode = response.getStatusLine().getStatusCode();
 		if(statusCode != HttpStatus.SC_OK) {
 			logger.error("Response has status code " + statusCode);
@@ -195,5 +213,14 @@ public class BinariesDownloader
 	public interface DownloadCompleteNotifier
 	{
 		public void onDownloadComplete();
+	}
+
+	protected HttpClientContext getHttpClientContext()
+	{
+		if(proxy == null) {
+			return null;
+		}
+
+		return proxy.getContext();
 	}
 }

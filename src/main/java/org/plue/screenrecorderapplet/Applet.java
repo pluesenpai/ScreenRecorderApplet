@@ -7,10 +7,15 @@ import org.apache.log4j.PropertyConfigurator;
 import org.plue.screenrecorderapplet.constants.PropertyKeys;
 import org.plue.screenrecorderapplet.constants.StandardMethodNames;
 import org.plue.screenrecorderapplet.enums.NotificationType;
+import org.plue.screenrecorderapplet.exceptions.BinariesDownloadException;
 import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
 import org.plue.screenrecorderapplet.models.AppletParameters;
+import org.plue.screenrecorderapplet.models.proxy.BasicAuthProxyConfiguration;
+import org.plue.screenrecorderapplet.models.proxy.NTLMProxyConfiguration;
+import org.plue.screenrecorderapplet.models.proxy.ProxyConfiguration;
 import org.plue.screenrecorderapplet.services.BinariesDownloader;
 import org.plue.screenrecorderapplet.services.ScreenRecorder;
+import org.plue.screenrecorderapplet.services.proxy.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,11 +174,45 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 	{
 		logger.debug("# called downloadBinaries");
 
-		BinariesDownloader binariesDownloader = new BinariesDownloader(getDocumentBase(), getCodeBase());
+		BaseProxy proxy = createProxy();
+
+		BinariesDownloader binariesDownloader = new BinariesDownloader(getDocumentBase(), getCodeBase(), proxy);
 		binariesDownloader.setDownloadCompleteNotifier(this);
 		binariesDownloader.download();
 
 		logger.debug("# completed downloadBinaries");
+	}
+
+	private BaseProxy createProxy() throws BinariesDownloadException
+	{
+		String proxyType = getParameter("proxy_type");
+		if(StringUtils.equals(proxyType, "BASIC")) {
+			return createBasicAuthProxy();
+		} else if(StringUtils.equals(proxyType, "NOAUTH")) {
+			return createNoAuthProxy();
+		} else if(StringUtils.equals(proxyType, "NTLM")) {
+			return createNTLMAuthProxy();
+		}
+
+		return new NoProxy();
+	}
+
+	private BaseProxy createNoAuthProxy() throws BinariesDownloadException
+	{
+		ProxyConfiguration configuration = new ProxyConfiguration(this);
+		return new NoAuth(configuration);
+	}
+
+	private BaseProxy createBasicAuthProxy() throws BinariesDownloadException
+	{
+		BasicAuthProxyConfiguration configuration = new BasicAuthProxyConfiguration(this);
+		return new BasicAuth(configuration);
+	}
+
+	private BaseProxy createNTLMAuthProxy() throws BinariesDownloadException
+	{
+		NTLMProxyConfiguration configuration = new NTLMProxyConfiguration(this);
+		return new NTLMAuth(configuration);
 	}
 
 	private void notifyView(NotificationType state, String message)
