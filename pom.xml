@@ -4,7 +4,7 @@
 
 	<groupId>org.plue</groupId>
 	<artifactId>screen-recorder-applet</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.5-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<scm>
