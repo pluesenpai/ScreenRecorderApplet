@@ -5,6 +5,7 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
@@ -27,7 +28,7 @@ public class BasicAuth extends BaseProxy
 		BasicAuthProxyConfiguration configuration = (BasicAuthProxyConfiguration) proxyConfiguration;
 
 		HttpHost targetHost = new HttpHost(configuration.getHost(), configuration.getPort(),
-				configuration.getProtocol().name());
+				configuration.getProtocol().getProtocol());
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		credentialsProvider.setCredentials(
 				new AuthScope(targetHost.getHostName(), targetHost.getPort()),
@@ -42,5 +43,29 @@ public class BasicAuth extends BaseProxy
 		context.setAuthCache(authCache);
 
 		return context;
+	}
+
+	@Override
+	public RequestConfig getRequestConfig()
+	{
+		HttpHost proxy = new HttpHost(proxyConfiguration.getHost(), proxyConfiguration.getPort(),
+				proxyConfiguration.getProtocol().getProtocol());
+
+		return RequestConfig.custom()
+				.setProxy(proxy)
+				.build();
+	}
+
+	@Override
+	public CredentialsProvider getCredentialsProvider()
+	{
+		BasicAuthProxyConfiguration configuration = (BasicAuthProxyConfiguration) proxyConfiguration;
+
+		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+		credentialsProvider.setCredentials(
+				new AuthScope(configuration.getHost(), configuration.getPort()),
+				new UsernamePasswordCredentials(configuration.getUsername(), configuration.getPassword()));
+
+		return credentialsProvider;
 	}
 }

@@ -8,7 +8,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -122,7 +124,10 @@ public class BinariesDownloader
 
 		File binFolder = appletParameters.getBinFolder();
 		URL documentBase = getDocumentBase();
-		String hostUrl = documentBase.getProtocol() + "://" + documentBase.getHost() + ":" + documentBase.getPort();
+		String hostUrl = documentBase.getProtocol() + "://" + documentBase.getHost();
+		if(documentBase.getPort() != -1) {
+			hostUrl += ":" + documentBase.getPort();
+		}
 		String zipFilename = binFolder.getName() + ".zip";
 
 		String url = hostUrl + "/" + zipFilename;
@@ -158,13 +163,17 @@ public class BinariesDownloader
 	{
 		logger.debug("# called doDownload");
 
-		HttpClient httpClient = HttpClientBuilder.create().build();
+		HttpClient httpClient = HttpClientBuilder
+				.create()
+				.setDefaultCredentialsProvider(getCredentialsProvider())
+				.build();
 
 		logger.info("Downloading from URL " + url + " to path " + saveTo);
 		String downloadURL = url + "?" + Math.random() * 10000;
 		HttpGet request = new HttpGet(downloadURL);
+		request.setConfig(getRequestConfig());
 
-		HttpResponse response = httpClient.execute(request, getHttpClientContext());
+		HttpResponse response = httpClient.execute(request);
 		int statusCode = response.getStatusLine().getStatusCode();
 		if(statusCode != HttpStatus.SC_OK) {
 			logger.error("Response has status code " + statusCode);
@@ -222,5 +231,23 @@ public class BinariesDownloader
 		}
 
 		return proxy.getContext();
+	}
+
+	protected RequestConfig getRequestConfig()
+	{
+		if(proxy == null) {
+			return null;
+		}
+
+		return proxy.getRequestConfig();
+	}
+
+	protected CredentialsProvider getCredentialsProvider()
+	{
+		if(proxy == null) {
+			return null;
+		}
+
+		return proxy.getCredentialsProvider();
 	}
 }

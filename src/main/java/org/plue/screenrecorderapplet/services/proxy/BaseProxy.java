@@ -1,5 +1,8 @@
 package org.plue.screenrecorderapplet.services.proxy;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.plue.screenrecorderapplet.models.proxy.ProxyConfiguration;
 
@@ -17,6 +20,10 @@ public abstract class BaseProxy
 
 	public abstract HttpClientContext getContext();
 
+	public abstract RequestConfig getRequestConfig();
+
+	public abstract CredentialsProvider getCredentialsProvider();
+
 	public enum ProxyProtocol
 	{
 		HTTP("http"),
@@ -27,6 +34,22 @@ public abstract class BaseProxy
 		private ProxyProtocol(String protocol)
 		{
 			this.protocol = protocol;
+		}
+
+		public String getProtocol()
+		{
+			return protocol;
+		}
+
+		public static ProxyProtocol fromString(String protocol)
+		{
+			for(ProxyProtocol proxyProtocol : ProxyProtocol.values()) {
+				if(StringUtils.equalsIgnoreCase(proxyProtocol.getProtocol(), protocol)) {
+					return proxyProtocol;
+				}
+			}
+
+			throw new IllegalArgumentException("No enum constant " + protocol);
 		}
 	}
 }

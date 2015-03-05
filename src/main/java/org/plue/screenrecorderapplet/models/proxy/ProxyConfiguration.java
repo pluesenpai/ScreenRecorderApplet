@@ -3,12 +3,16 @@ package org.plue.screenrecorderapplet.models.proxy;
 import org.plue.screenrecorderapplet.Applet;
 import org.plue.screenrecorderapplet.exceptions.BinariesDownloadException;
 import org.plue.screenrecorderapplet.services.proxy.BaseProxy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author paolo86@altervista.org
  */
 public class ProxyConfiguration
 {
+	private static final Logger logger = LoggerFactory.getLogger(ProxyConfiguration.class);
+
 	private BaseProxy.ProxyProtocol protocol;
 
 	private String host;
@@ -19,17 +23,20 @@ public class ProxyConfiguration
 	{
 		String proxyProtocol = applet.getParameter("proxy_protocol");
 		this.protocol = validateProxyProtocol(proxyProtocol);
+		logger.info("proxy_protocol = " + this.protocol.getProtocol());
 
 		String host = applet.getParameter("host");
 		this.host = validateHost(host);
+		logger.info("host = " + this.host);
 
 		String portAsString = applet.getParameter("port");
 		this.port = validatePort(portAsString);
+		logger.info("port = " + this.port);
 	}
 
 	private static BaseProxy.ProxyProtocol validateProxyProtocol(String proxyProtocol) throws BinariesDownloadException
 	{
-		BaseProxy.ProxyProtocol protocol = BaseProxy.ProxyProtocol.valueOf(proxyProtocol);
+		BaseProxy.ProxyProtocol protocol = BaseProxy.ProxyProtocol.fromString(proxyProtocol);
 		if(protocol == null) {
 			throw new BinariesDownloadException("Unknown proxy protocol " + proxyProtocol);
 		}

@@ -186,14 +186,20 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 	private BaseProxy createProxy() throws BinariesDownloadException
 	{
 		String proxyType = getParameter("proxy_type");
+		logger.info("proxyType = " + proxyType);
+
 		if(StringUtils.equals(proxyType, "BASIC")) {
+			logger.info("Using Basic Auth");
 			return createBasicAuthProxy();
 		} else if(StringUtils.equals(proxyType, "NOAUTH")) {
+			logger.info("Using No Auth");
 			return createNoAuthProxy();
 		} else if(StringUtils.equals(proxyType, "NTLM")) {
+			logger.info("Using NTLM Auth");
 			return createNTLMAuthProxy();
 		}
 
+		logger.info("Using Direct connection");
 		return new NoProxy();
 	}
 
