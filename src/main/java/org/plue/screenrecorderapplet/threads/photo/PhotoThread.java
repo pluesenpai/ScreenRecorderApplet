@@ -97,6 +97,7 @@ public abstract class PhotoThread extends Thread
 				private void runInternal()
 				{
 					try {
+						// TODO: Use CommandExecutor
 						String command = getFFmpegCommand();
 
 						List<String> ffmpegArgs = Arrays.asList(StringUtils.split(command, " "));
