@@ -61,16 +61,7 @@ public abstract class PhotoThread extends Thread
 			logger.debug("# completed newInstance");
 
 			return photoThread;
-		} catch(NoSuchMethodException e) {
-			logger.error("Error while initializing PhotoThread", e);
-			throw new RuntimeException(e);
-		} catch(IllegalAccessException e) {
-			logger.error("Error while initializing PhotoThread", e);
-			throw new RuntimeException(e);
-		} catch(InstantiationException e) {
-			logger.error("Error while initializing PhotoThread", e);
-			throw new RuntimeException(e);
-		} catch(InvocationTargetException e) {
+		} catch(Exception e) {
 			logger.error("Error while initializing PhotoThread", e);
 			throw new RuntimeException(e);
 		}

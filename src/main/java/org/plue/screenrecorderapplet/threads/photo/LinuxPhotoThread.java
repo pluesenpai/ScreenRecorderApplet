@@ -1,6 +1,7 @@
 package org.plue.screenrecorderapplet.threads.photo;
 
 import org.apache.commons.lang.StringUtils;
+import org.plue.screenrecorderapplet.exceptions.FFMpegException;
 import org.plue.screenrecorderapplet.exceptions.RetrieveFFMpegCommandException;
 import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
 import org.plue.screenrecorderapplet.executor.CommandExecutor;
@@ -58,7 +59,7 @@ public class LinuxPhotoThread extends PhotoThread
 		} catch(Exception e) {
 			String message = "Error while listing devices. Got exception: ";
 			logger.error(message, e);
-			throw new RetrieveFFMpegCommandException(message, e); // FIXME: change exception
+			throw new RetrieveFFMpegCommandException(message, e);
 		}
 
 		logger.debug("getV4LDevices - stderr");
@@ -69,7 +70,7 @@ public class LinuxPhotoThread extends PhotoThread
 		if(result.getReturnCode() != 1) {
 			String message = "Error while listing devices. Exit code: " + result.getReturnCode();
 			logger.error(message);
-			throw new RetrieveFFMpegCommandException(message); // FIXME: change exception
+			throw new FFMpegException(message);
 		}
 
 		String output = result.getStderr();
