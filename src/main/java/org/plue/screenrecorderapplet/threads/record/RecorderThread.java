@@ -4,8 +4,9 @@ import org.apache.commons.lang.StringUtils;
 import org.plue.screenrecorderapplet.enums.NotificationType;
 import org.plue.screenrecorderapplet.exceptions.ScreenRecorderException;
 import org.plue.screenrecorderapplet.exceptions.UnknownOperatingSystemException;
-import org.plue.screenrecorderapplet.models.AppletParameters;
 import org.plue.screenrecorderapplet.executor.StreamEventGobbler;
+import org.plue.screenrecorderapplet.models.AppletParameters;
+import org.plue.screenrecorderapplet.models.Extensions;
 import org.plue.screenrecorderapplet.services.ScreenRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
@@ -81,7 +83,8 @@ public abstract class RecorderThread extends Thread
 		AppletParameters appletParameters = AppletParameters.getInstance();
 		Class<? extends RecorderThread> recorderThreadClass = appletParameters.getRecorderThreadClass();
 		if(recorderThreadClass == null) {
-			logger.error("Unknown or unsupported operating system: '" + appletParameters.getOperatingSystem().toString() + "'");
+			logger.error("Unknown or unsupported operating system: '" + appletParameters.getOperatingSystem().toString()
+					+ "'");
 			throw new UnknownOperatingSystemException();
 		}
 
@@ -184,7 +187,26 @@ public abstract class RecorderThread extends Thread
 		pw.print("q");
 		pw.flush();
 
+		runExtensions();
+
 		logger.debug("# completed stopRecording");
+	}
+
+	private void runExtensions()
+	{
+		logger.debug("# called runExtensions");
+
+		try {
+			Extensions extensions = appletParameters.getExtensions();
+			if(extensions != null) {
+				logger.info("Executing extensions");
+				extensions.execute(new File(outputFileFullPath));
+			}
+		} catch(Throwable t) {
+			logger.error("Error running extensions", t);
+		}
+
+		logger.debug("# completed runExtensions");
 	}
 
 	protected abstract String getFFmpegCommand() throws ScreenRecorderException;

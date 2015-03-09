@@ -3,6 +3,7 @@ package org.plue.screenrecorderapplet;
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.PropertyConfigurator;
 import org.plue.screenrecorderapplet.constants.PropertyKeys;
 import org.plue.screenrecorderapplet.constants.StandardMethodNames;
@@ -48,6 +49,7 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 			appletParameters = AppletParameters.getInstance();
 		} catch(Exception e) {
 			System.out.println("Cannot load applet parameters");
+			System.out.println(ExceptionUtils.getFullStackTrace(e));
 		}
 
 		setupLogFile();
@@ -96,6 +98,7 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 			if(appletParameters == null) {
 				appletParameters = AppletParameters.getInstance();
 			}
+			appletParameters.init(this);
 
 			createMissingDirectories();
 			logAppletInfo();
@@ -261,7 +264,9 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 		logger.debug("# completed onDownloadComplete");
 	}
 
-	/********************* JAVASCRIPT APIs START *********************/
+	/**
+	 * ****************** JAVASCRIPT APIs START ********************
+	 */
 
 	@Override
 	public void startRecord(final String saveFolder, final String filename)
@@ -346,7 +351,9 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 		// TODO
 	}
 
-	/********************* JAVASCRIPT APIs END *********************/
+	/**
+	 * ****************** JAVASCRIPT APIs END ********************
+	 */
 
 	private class RecordingInfoNotifier implements ScreenRecorder.RecordingInfoNotifier
 	{

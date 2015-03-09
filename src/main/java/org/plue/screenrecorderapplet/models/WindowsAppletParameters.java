@@ -1,6 +1,7 @@
 package org.plue.screenrecorderapplet.models;
 
 import org.apache.commons.io.FilenameUtils;
+import org.plue.screenrecorderapplet.Applet;
 import org.plue.screenrecorderapplet.constants.PropertyKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

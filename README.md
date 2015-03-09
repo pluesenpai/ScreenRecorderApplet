@@ -59,7 +59,7 @@ git clone http://github.com/onedanshow/Screen-Courter.git
 ## Licence
 
 ```
-   Copyright 2014 Paolo Cortis (paolinux86)
+   Copyright 2015 Paolo Cortis (paolinux86)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
