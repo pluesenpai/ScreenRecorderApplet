@@ -43,6 +43,8 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 
 	private ScreenRecorder screenRecorder;
 
+	public static Applet applet;
+
 	public Applet()
 	{
 		try {
@@ -53,6 +55,7 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 		}
 
 		setupLogFile();
+		Applet.applet = this;
 	}
 
 	private void setupLogFile()

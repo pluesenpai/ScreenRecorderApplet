@@ -2,6 +2,8 @@ package org.plue.screenrecorderapplet.models;
 
 import org.apache.commons.lang.StringUtils;
 import org.plue.screenrecorderapplet.AfterRecording;
+import org.plue.screenrecorderapplet.Applet;
+import org.plue.screenrecorderapplet.AppletWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +35,7 @@ public class Extensions extends ArrayList<AfterRecording>
 			return;
 		}
 		engine.put("videoFile", video);
+		engine.put("appletWrapper", new AppletWrapper(Applet.applet));
 
 		for(AfterRecording extension : this) {
 			logger.info(MessageFormat.format("Calling extension [{0}]", extension.getClass().getName()));
