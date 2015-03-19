@@ -235,7 +235,7 @@ public class Applet extends java.applet.Applet implements BinariesDownloader.Dow
 			message = StringUtils.EMPTY;
 		}
 
-		jsCall(StandardMethodNames.SRA_STATUS_UPDATE, state, message);
+		jsCall(StandardMethodNames.SRA_STATUS_UPDATE, state.toString(), message);
 
 		logger.debug("# completed notifyView");
 	}
